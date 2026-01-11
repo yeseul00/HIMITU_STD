@@ -1,5 +1,8 @@
 import { TelegramAPI } from './telegram/TelegramAPI.js';
 import { CanvasRenderer } from './core/CanvasRenderer.js';
+import { TileGrid } from './components/TileGrid.js';
+import { InputHandler } from './utils/InputHandler.js';
+import { screenToGrid, isValidGridPosition } from './utils/helpers.js';
 import { TARGET_FPS, DEBUG } from './utils/constants.js';
 
 class Game {
@@ -10,7 +13,14 @@ class Game {
         // 렌더러 초기화
         this.renderer = new CanvasRenderer('gameCanvas');
 
-        // 게임 루프
+        // 타일 그리드 생성
+        this.tileGrid = new TileGrid();
+
+        // 입력 처리기 초기화
+        this.inputHandler = new InputHandler(this.renderer.canvas, this.telegram);
+        this.setupInputHandlers();
+
+        // 게임 루프 변수
         this.lastTime = 0;
         this.frameTime = 1000 / TARGET_FPS;
         this.fps = 0;
@@ -19,6 +29,31 @@ class Game {
 
         // 사용자 정보 표시
         this.updateInfoPanel();
+    }
+
+    setupInputHandlers() {
+        // 1. 포인터 이동 (호버 효과)
+        this.inputHandler.on('move', (pos) => {
+            const { col, row } = screenToGrid(pos.x, pos.y);
+
+            if (isValidGridPosition(col, row)) {
+                this.tileGrid.setHoveredTile(col, row);
+            } else {
+                this.tileGrid.clearHover();
+            }
+        });
+
+        // 2. 포인터 클릭/터치
+        this.inputHandler.on('down', (pos) => {
+            const { col, row } = screenToGrid(pos.x, pos.y);
+
+            if (isValidGridPosition(col, row)) {
+                console.log(`[Game] 타일 선택됨: (${col}, ${row})`);
+
+                // 클릭 시 강한 진동
+                this.telegram.hapticFeedback('impact');
+            }
+        });
     }
 
     updateInfoPanel() {
@@ -30,7 +65,7 @@ class Game {
         <strong>🎮 Tavern Defense</strong><br>
         👤 ${user.firstName} ${user.lastName}<br>
         ID: ${user.id}<br>
-        ${DEBUG.SHOW_FPS ? '⚡ <span id="fps">60</span> FPS' : ''}
+        ⚡ <span id="fps">0.0</span> FPS
       `;
         } else {
             info.style.display = 'none';
@@ -54,7 +89,7 @@ class Game {
             this.lastTime = currentTime - (deltaTime % this.frameTime);
 
             // 렌더링
-            this.renderer.render();
+            this.render();
 
             // FPS 계산
             if (DEBUG.SHOW_FPS) {
@@ -65,14 +100,22 @@ class Game {
         requestAnimationFrame(this.tick.bind(this));
     }
 
+    render() {
+        // 화면 클리어
+        this.renderer.clear();
+
+        // 타일 그리드 렌더링
+        this.tileGrid.render(this.renderer.ctx);
+    }
+
     updateFPS(currentTime) {
-        const now = performance.now();  // 더 정확한 시간 측정
+        const now = performance.now();
         this.frameCount++;
 
         if (now - this.fpsUpdateTime >= 1000) {
             const elapsed = now - this.fpsUpdateTime;
             const rawFps = (this.frameCount / elapsed) * 1000;
-            this.fps = rawFps.toFixed(1); // 소수점 첫째 자리까지 표시
+            this.fps = rawFps.toFixed(1);
             this.frameCount = 0;
             this.fpsUpdateTime = now;
 
