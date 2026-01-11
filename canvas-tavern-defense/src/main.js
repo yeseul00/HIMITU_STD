@@ -66,12 +66,14 @@ class Game {
     }
 
     updateFPS(currentTime) {
+        const now = performance.now();  // 더 정확한 시간 측정
         this.frameCount++;
 
-        if (currentTime - this.fpsUpdateTime >= 1000) {
-            this.fps = this.frameCount;
+        if (now - this.fpsUpdateTime >= 1000) {
+            const elapsed = now - this.fpsUpdateTime;
+            this.fps = Math.round((this.frameCount / elapsed) * 1000);  // 정확한 FPS 계산
             this.frameCount = 0;
-            this.fpsUpdateTime = currentTime;
+            this.fpsUpdateTime = now;
 
             const fpsElement = document.getElementById('fps');
             if (fpsElement) {
