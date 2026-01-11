@@ -57,6 +57,30 @@
             border-radius: 5px;
             z-index: 1000;
         }
+
+        #testButtons {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .test-btn {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .test-btn:active {
+            background: #357abd;
+        }
     </style>
 </head>
 
@@ -64,8 +88,15 @@
     <div id="info">Loading...</div>
     <canvas id="gameCanvas"></canvas>
 
+    <!-- CloudStorage 테스트 버튼 -->
+    <div id="testButtons">
+        <button class="test-btn" onclick="window.game.testSave()">💾 저장</button>
+        <button class="test-btn" onclick="window.game.testLoad()">📥 불러오기</button>
+        <button class="test-btn" onclick="window.game.testGetKeys()">📋 키 목록</button>
+    </div>
+
     <!-- GitHub Actions가 자동으로 ?v=타임스탬프를 추가합니다 -->
-    <script type="module" src="src/main.js?v=20260111103551"></script>
+    <script type="module" src="src/main.js?v=20260111124637"></script>
 </body>
 
 </html>
