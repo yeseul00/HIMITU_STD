@@ -84,9 +84,11 @@ export class TelegramAPI {
 
     // HapticFeedback (진동)
     hapticFeedback(type = 'impact') {
-        // type: 'impact', 'notification', 'selection'
-        if (this.tg.HapticFeedback) {
+        // WebApp 버전 6.1 이상에서만 지원
+        if (this.tg.isVersionAtLeast && this.tg.isVersionAtLeast('6.1') && this.tg.HapticFeedback) {
             this.tg.HapticFeedback.impactOccurred(type);
+        } else {
+            console.warn('[Telegram] HapticFeedback is not supported in this version');
         }
     }
 

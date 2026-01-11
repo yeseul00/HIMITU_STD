@@ -71,7 +71,8 @@ class Game {
 
         if (now - this.fpsUpdateTime >= 1000) {
             const elapsed = now - this.fpsUpdateTime;
-            this.fps = Math.round((this.frameCount / elapsed) * 1000);  // 정확한 FPS 계산
+            const rawFps = (this.frameCount / elapsed) * 1000;
+            this.fps = rawFps.toFixed(1); // 소수점 첫째 자리까지 표시
             this.frameCount = 0;
             this.fpsUpdateTime = now;
 
