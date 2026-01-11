@@ -1,0 +1,25 @@
+{
+  "name": "HIMITU Wiki - 지식의 마법서",
+  "short_name": "HIMITU Wiki",
+  "description": "개인정보보호법 지식 관리 시스템",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "theme_color": "#3E2723",
+  "background_color": "#FFFBF0",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

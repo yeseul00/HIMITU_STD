@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIMITU Wiki - 지식의 마법서</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#3E2723">
+
+    <!-- Apple Mobile Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HIMITU Wiki">
+
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #FFFBF0 0%, #F5E6D3 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(62, 39, 35, 0.2);
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #3E2723;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            color: #8D6E63;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .icon {
+            width: 128px;
+            height: 128px;
+            margin: 20px auto;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(62, 39, 35, 0.3);
+        }
+
+        .status {
+            background: #E8F5E9;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            color: #2E7D32;
+            font-weight: 500;
+        }
+
+        .links {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .links a {
+            background: #3E2723;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .links a:hover {
+            background: #5D4037;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(62, 39, 35, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <img src="/icons/icon-192.png" alt="HIMITU Wiki Icon" class="icon">
+        <h1>🎮 HIMITU Wiki</h1>
+        <p class="subtitle">지식의 마법서 - 개인정보보호법 지식 관리 시스템</p>
+
+        <div class="status" id="pwa-status">
+            ⏳ PWA 초기화 중...
+        </div>
+
+        <div class="links">
+            <a href="/01_Canvas_미니게임_프로토타입.html">Canvas 미니게임</a>
+            <a href="/02_TMA_테스트앱_HelloTMA.html">TMA 테스트앱</a>
+            <a href="/03_HIMITU_Wiki_PWA전환.html">PWA 전환</a>
+            <a href="/04_게임_데이터구조_설계.html">데이터 구조</a>
+        </div>
+    </div>
+
+    <!-- Service Worker 등록 -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((registration) => {
+                        console.log('✅ Service Worker 등록 성공:', registration.scope);
+                        updateStatus('✅ PWA 설치 완료! 오프라인에서도 사용 가능합니다.', 'success');
+
+                        // 업데이트 감지
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    updateStatus('🔄 새 버전이 있습니다. 페이지를 새로고침하세요.', 'info');
+                                }
+                            });
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('❌ Service Worker 등록 실패:', error);
+                        updateStatus('⚠️ PWA 설치 실패. 일반 웹앱으로 사용 중입니다.', 'error');
+                    });
+            });
+        } else {
+            updateStatus('⚠️ 이 브라우저는 PWA를 지원하지 않습니다.', 'error');
+        }
+
+        function updateStatus(message, type) {
+            const statusEl = document.getElementById('pwa-status');
+            statusEl.textContent = message;
+
+            if (type === 'success') {
+                statusEl.style.background = '#E8F5E9';
+                statusEl.style.color = '#2E7D32';
+            } else if (type === 'error') {
+                statusEl.style.background = '#FFEBEE';
+                statusEl.style.color = '#C62828';
+            } else if (type === 'info') {
+                statusEl.style.background = '#E3F2FD';
+                statusEl.style.color = '#1565C0';
+            }
+        }
+
+        // PWA 설치 프롬프트
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+
+            const installBtn = document.createElement('button');
+            installBtn.textContent = '📱 홈 화면에 추가';
+            installBtn.className = 'links';
+            installBtn.style.cssText = 'background: #FF6F00; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin-top: 20px;';
+
+            installBtn.addEventListener('click', async () => {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`사용자 선택: ${outcome}`);
+                deferredPrompt = null;
+                installBtn.remove();
+            });
+
+            document.querySelector('.container').appendChild(installBtn);
+        });
+    </script>
+</body>
+
+</html>
