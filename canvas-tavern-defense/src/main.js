@@ -2,6 +2,7 @@ import { TelegramAPI } from './telegram/TelegramAPI.js';
 import { CanvasRenderer } from './core/CanvasRenderer.js';
 import { TileGrid } from './components/TileGrid.js';
 import { InputHandler } from './utils/InputHandler.js';
+import { CloudStorage } from './telegram/CloudStorage.js';
 import { screenToGrid, isValidGridPosition } from './utils/helpers.js';
 import { TARGET_FPS, DEBUG } from './utils/constants.js';
 import { APP_VERSION, BUILD_DATE, COMMIT_SHA, GITHUB_RUN_NUMBER } from './version.js';
@@ -19,6 +20,9 @@ class Game {
 
         // 타일 그리드 생성
         this.tileGrid = new TileGrid();
+
+        // CloudStorage 초기화
+        this.storage = new CloudStorage(this.telegram);
 
         // 입력 처리기 초기화
         this.inputHandler = new InputHandler(this.renderer.canvas, this.telegram);
@@ -95,6 +99,51 @@ class Game {
         }
     }
 
+    // CloudStorage 테스트 메서드들
+    async testSave() {
+        try {
+            const testData = {
+                level: 1,
+                gold: 100,
+                timestamp: Date.now()
+            };
+            await this.storage.save('gameData', testData);
+            console.log('✅ [Test] 저장 성공!');
+            this.telegram.hapticFeedback('notification');
+            alert('✅ 데이터 저장 성공!');
+        } catch (error) {
+            console.error('❌ [Test] 저장 실패:', error);
+            alert('❌ 저장 실패: ' + error.message);
+        }
+    }
+
+    async testLoad() {
+        try {
+            const data = await this.storage.load('gameData');
+            console.log('✅ [Test] 불러오기 성공:', data);
+            this.telegram.hapticFeedback('notification');
+            if (data) {
+                alert(`✅ 불러오기 성공!\nLevel: ${data.level}\nGold: ${data.gold}`);
+            } else {
+                alert('ℹ️ 저장된 데이터가 없습니다.');
+            }
+        } catch (error) {
+            console.error('❌ [Test] 불러오기 실패:', error);
+            alert('❌ 불러오기 실패: ' + error.message);
+        }
+    }
+
+    async testGetKeys() {
+        try {
+            const keys = await this.storage.getKeys();
+            console.log('✅ [Test] 키 목록:', keys);
+            alert(`📋 저장된 키 목록:\n${keys.join(', ') || '(없음)'}`);
+        } catch (error) {
+            console.error('❌ [Test] 키 목록 가져오기 실패:', error);
+            alert('❌ 키 목록 가져오기 실패: ' + error.message);
+        }
+    }
+
     start() {
         console.log('[Game] 게임 시작!');
         console.log('[Game] 사용자:', this.telegram.getUserInfo());
@@ -155,8 +204,14 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         const game = new Game();
         game.start();
+
+        // 전역으로 노출 (콘솔 테스트용)
+        window.game = game;
     });
 } else {
     const game = new Game();
     game.start();
+
+    // 전역으로 노출 (콘솔 테스트용)
+    window.game = game;
 }
