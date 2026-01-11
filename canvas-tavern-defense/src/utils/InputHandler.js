@@ -52,13 +52,14 @@ export class InputHandler {
             clientY = e.clientY;
         }
 
-        // Canvas 내부 좌표로 변환 및 스케일 보정
-        const scaleX = this.canvas.width / rect.width;
-        const scaleY = this.canvas.height / rect.height;
+        // Canvas 논리적 좌표로 변환 (DPR 무시)
+        // rect.width는 CSS 크기, 우리는 논리적 크기(360x640)가 필요
+        const logicalX = (clientX - rect.left) / rect.width * 360;  // CANVAS_WIDTH 대신 하드코딩
+        const logicalY = (clientY - rect.top) / rect.height * 640; // CANVAS_HEIGHT 대신 하드코딩
 
         return {
-            x: (clientX - rect.left) * scaleX,
-            y: (clientY - rect.top) * scaleY
+            x: logicalX,
+            y: logicalY
         };
     }
 
