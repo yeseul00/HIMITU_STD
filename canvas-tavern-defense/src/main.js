@@ -4,9 +4,13 @@ import { TileGrid } from './components/TileGrid.js';
 import { InputHandler } from './utils/InputHandler.js';
 import { screenToGrid, isValidGridPosition } from './utils/helpers.js';
 import { TARGET_FPS, DEBUG } from './utils/constants.js';
+import { APP_VERSION, BUILD_DATE, COMMIT_SHA, GITHUB_RUN_NUMBER } from './version.js';
 
 class Game {
     constructor() {
+        // 버전 정보 로깅
+        this.logVersionInfo();
+
         // 텔레그램 API 초기화
         this.telegram = new TelegramAPI();
 
@@ -29,6 +33,25 @@ class Game {
 
         // 사용자 정보 표시
         this.updateInfoPanel();
+    }
+
+    logVersionInfo() {
+        const style1 = 'color: #4a90e2; font-weight: bold; font-size: 14px';
+        const style2 = 'color: #4a90e2';
+        const style3 = 'color: #666';
+
+        console.log('%c' + '='.repeat(60), style2);
+        console.log('%c🎮 Tavern Defense - Telegram WebApp', style1);
+        console.log('%c' + '='.repeat(60), style2);
+        console.log('%c📦 Version:', style3, APP_VERSION);
+        console.log('%c📅 Build Date:', style3, BUILD_DATE);
+        console.log('%c🔖 Commit:', style3, COMMIT_SHA);
+        console.log('%c🔢 Build #:', style3, GITHUB_RUN_NUMBER);
+        console.log('%c' + '-'.repeat(60), style2);
+        console.log('%c🌐 User Agent:', style3, navigator.userAgent);
+        console.log('%c📱 Platform:', style3, navigator.platform);
+        console.log('%c🖥️ Screen:', style3, `${window.innerWidth}x${window.innerHeight}`);
+        console.log('%c' + '='.repeat(60), style2);
     }
 
     setupInputHandlers() {
@@ -63,8 +86,8 @@ class Game {
         if (DEBUG.ENABLED) {
             info.innerHTML = `
         <strong>🎮 Tavern Defense</strong><br>
-        👤 ${user.firstName} ${user.lastName}<br>
-        ID: ${user.id}<br>
+        📦 v${APP_VERSION.substring(0, 12)}<br>
+        👤 ${user.firstName}<br>
         ⚡ <span id="fps">0.0</span> FPS
       `;
         } else {
