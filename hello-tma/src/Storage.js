@@ -7,12 +7,38 @@
 export class Storage {
     constructor() {
         this.tg = window.Telegram?.WebApp;
-        this.isAvailable = !!this.tg?.CloudStorage;
+        // CloudStorage가 실제로 사용 가능한지 엄격하게 체크
+        this.isAvailable = this._checkCloudStorageSupport();
         this.storageKey = "tma_test_";
 
         if (!this.isAvailable) {
             console.log("💾 [DEV] CloudStorage 미지원, localStorage 사용");
+        } else {
+            console.log("☁️ CloudStorage 사용 가능");
         }
+    }
+
+    /**
+     * CloudStorage 지원 여부를 엄격하게 체크
+     * @private
+     */
+    _checkCloudStorageSupport() {
+        if (!this.tg) return false;
+        if (!this.tg.CloudStorage) return false;
+
+        // 버전 체크 (6.9 이상에서 CloudStorage 지원)
+        const version = parseFloat(this.tg.version);
+        if (version && version < 6.9) {
+            console.log(`⚠️ TMA 버전 ${version}은 CloudStorage 미지원 (6.9+ 필요)`);
+            return false;
+        }
+
+        // CloudStorage 메서드가 존재하는지 확인
+        if (typeof this.tg.CloudStorage.setItem !== 'function') {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -149,5 +175,13 @@ export class Storage {
                 }
             });
         });
+    }
+
+    /**
+     * 현재 스토리지 타입 반환
+     * @returns {string} 'CloudStorage' 또는 'localStorage'
+     */
+    getStorageType() {
+        return this.isAvailable ? 'CloudStorage' : 'localStorage';
     }
 }

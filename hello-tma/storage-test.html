@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudStorage 테스트</title>
+
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--tg-theme-bg-color, #1a1a2e);
+            color: var(--tg-theme-text-color, #ffffff);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--tg-theme-button-color, #4a90e2);
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .subtitle {
+            color: var(--tg-theme-hint-color, #888);
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .section {
+            background: var(--tg-theme-secondary-bg-color, #252540);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: var(--tg-theme-button-color, #4a90e2);
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            color: var(--tg-theme-hint-color, #888);
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            background: var(--tg-theme-bg-color, #1a1a30);
+            border: 1px solid var(--tg-theme-hint-color, #333);
+            border-radius: 8px;
+            color: var(--tg-theme-text-color, #fff);
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        button.primary {
+            background: var(--tg-theme-button-color, #4a90e2);
+            color: var(--tg-theme-button-text-color, white);
+        }
+
+        button.success {
+            background: #2ecc71;
+            color: white;
+        }
+
+        button.danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.8;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status.success {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+            color: #2ecc71;
+        }
+
+        .status.error {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+
+        .status.info {
+            background: rgba(74, 144, 226, 0.2);
+            border: 1px solid #4a90e2;
+            color: #4a90e2;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge.success {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .badge.warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .result-box {
+            background: var(--tg-theme-bg-color, #1a1a30);
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 100px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: #4a90e2;
+        }
+
+        .info-box {
+            background: var(--tg-theme-bg-color, #1a1a30);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            color: var(--tg-theme-hint-color, #888);
+        }
+
+        .info-value {
+            color: var(--tg-theme-text-color, #fff);
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>💾 CloudStorage 테스트</h1>
+        <p class="subtitle">Telegram CloudStorage 및 localStorage 폴백 테스트</p>
+
+        <!-- 상태 메시지 -->
+        <div id="status" class="status"></div>
+
+        <!-- 스토리지 정보 -->
+        <div class="section">
+            <div class="section-title">ℹ️ 스토리지 정보</div>
+            <div class="info-box">
+                <div class="info-item">
+                    <span class="info-label">현재 스토리지:</span>
+                    <span class="info-value" id="storageType">확인 중...</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">TMA 환경:</span>
+                    <span class="info-value" id="tmaEnv">확인 중...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 저장 -->
+        <div class="section">
+            <div class="section-title">💾 데이터 저장</div>
+            <div class="input-group">
+                <label for="saveKey">키 (Key):</label>
+                <input type="text" id="saveKey" placeholder="예: myData">
+            </div>
+            <div class="input-group">
+                <label for="saveValue">값 (Value) - JSON 형식:</label>
+                <textarea id="saveValue" placeholder='{"message": "Hello, World!"}'></textarea>
+            </div>
+            <button class="success" onclick="saveData()">💾 저장하기</button>
+        </div>
+
+        <!-- 불러오기 -->
+        <div class="section">
+            <div class="section-title">📥 데이터 불러오기</div>
+            <div class="input-group">
+                <label for="loadKey">키 (Key):</label>
+                <input type="text" id="loadKey" placeholder="예: myData">
+            </div>
+            <div class="buttons">
+                <button class="primary" onclick="loadData()">📥 불러오기</button>
+                <button class="danger" onclick="removeData()">🗑️ 삭제</button>
+            </div>
+        </div>
+
+        <!-- 결과 표시 -->
+        <div class="section">
+            <div class="section-title">📄 불러온 데이터</div>
+            <div class="result-box" id="resultBox">데이터를 불러오면 여기에 표시됩니다.</div>
+        </div>
+
+        <!-- 저장된 키 목록 -->
+        <div class="section">
+            <div class="section-title">📋 저장된 키 목록</div>
+            <button onclick="getKeys()" style="width: 100%; margin-bottom: 15px;">🔄 목록 새로고침</button>
+            <div class="result-box" id="keysList">목록을 불러오려면 위 버튼을 클릭하세요.</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Storage } from './src/Storage.js';
+
+        // Storage 인스턴스 생성
+        const storage = new Storage();
+
+        // 전역으로 노출
+        window.storage = storage;
+
+        // 초기화
+        function init() {
+            const storageType = storage.getStorageType();
+            document.getElementById('storageType').innerHTML =
+                storageType === 'CloudStorage'
+                    ? '<span class="badge success">CloudStorage</span>'
+                    : '<span class="badge warning">localStorage (폴백)</span>';
+
+            const isTMA = window.Telegram?.WebApp;
+            document.getElementById('tmaEnv').innerHTML =
+                isTMA
+                    ? '<span class="badge success">Telegram 내부</span>'
+                    : '<span class="badge warning">일반 브라우저</span>';
+
+            showStatus(`✅ ${storageType}로 초기화됨`, 'success');
+        }
+
+        // 저장
+        window.saveData = async function () {
+            const key = document.getElementById('saveKey').value.trim();
+            const valueStr = document.getElementById('saveValue').value.trim();
+
+            if (!key) {
+                showStatus('❌ 키를 입력하세요', 'error');
+                return;
+            }
+
+            if (!valueStr) {
+                showStatus('❌ 값을 입력하세요', 'error');
+                return;
+            }
+
+            try {
+                const value = JSON.parse(valueStr);
+                await storage.save(key, value);
+                showStatus(`✅ "${key}" 저장 완료!`, 'success');
+
+                // 폼 초기화
+                document.getElementById('saveKey').value = '';
+                document.getElementById('saveValue').value = '';
+            } catch (error) {
+                if (error instanceof SyntaxError) {
+                    showStatus('❌ JSON 형식이 올바르지 않습니다', 'error');
+                } else {
+                    showStatus(`❌ 저장 실패: ${error.message}`, 'error');
+                }
+                console.error('[Test] 저장 실패:', error);
+            }
+        };
+
+        // 불러오기
+        window.loadData = async function () {
+            const key = document.getElementById('loadKey').value.trim();
+
+            if (!key) {
+                showStatus('❌ 키를 입력하세요', 'error');
+                return;
+            }
+
+            try {
+                const value = await storage.load(key);
+
+                if (value === null) {
+                    document.getElementById('resultBox').textContent = `키 "${key}"에 저장된 데이터가 없습니다.`;
+                    showStatus(`ℹ️ "${key}" 데이터 없음`, 'info');
+                } else {
+                    document.getElementById('resultBox').textContent = JSON.stringify(value, null, 2);
+                    showStatus(`✅ "${key}" 불러오기 완료!`, 'success');
+                }
+            } catch (error) {
+                showStatus(`❌ 불러오기 실패: ${error.message}`, 'error');
+                console.error('[Test] 불러오기 실패:', error);
+            }
+        };
+
+        // 삭제
+        window.removeData = async function () {
+            const key = document.getElementById('loadKey').value.trim();
+
+            if (!key) {
+                showStatus('❌ 키를 입력하세요', 'error');
+                return;
+            }
+
+            if (!confirm(`"${key}" 데이터를 삭제하시겠습니까?`)) {
+                return;
+            }
+
+            try {
+                await storage.remove(key);
+                document.getElementById('resultBox').textContent = '데이터를 불러오면 여기에 표시됩니다.';
+                showStatus(`✅ "${key}" 삭제 완료!`, 'success');
+            } catch (error) {
+                showStatus(`❌ 삭제 실패: ${error.message}`, 'error');
+                console.error('[Test] 삭제 실패:', error);
+            }
+        };
+
+        // 키 목록
+        window.getKeys = async function () {
+            try {
+                const keys = await storage.getKeys();
+
+                if (keys.length === 0) {
+                    document.getElementById('keysList').textContent = '저장된 키가 없습니다.';
+                } else {
+                    document.getElementById('keysList').textContent = keys.join('\n');
+                }
+
+                showStatus(`✅ ${keys.length}개의 키 발견`, 'success');
+            } catch (error) {
+                showStatus(`❌ 키 목록 가져오기 실패: ${error.message}`, 'error');
+                console.error('[Test] 키 목록 가져오기 실패:', error);
+            }
+        };
+
+        // 상태 메시지 표시
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+
+        // 페이지 로드 시 초기화
+        init();
+
+        console.log('='.repeat(60));
+        console.log('💾 CloudStorage 테스트 페이지');
+        console.log('='.repeat(60));
+        console.log('Storage 인스턴스:', storage);
+        console.log('스토리지 타입:', storage.getStorageType());
+        console.log('='.repeat(60));
+    </script>
+</body>
+
+</html>

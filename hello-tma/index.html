@@ -2,138 +2,334 @@
 <html lang="ko">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TMA API Explorer</title>
-  <link rel="stylesheet" href="./css/style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telegram Mini App Test</title>
+
   <!-- Telegram Web App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--tg-theme-bg-color, #1a1a2e);
+      color: var(--tg-theme-text-color, #ffffff);
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: var(--tg-theme-button-color, #4a90e2);
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+
+    .subtitle {
+      color: var(--tg-theme-hint-color, #888);
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .section {
+      background: var(--tg-theme-secondary-bg-color, #252540);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      color: var(--tg-theme-button-color, #4a90e2);
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      border-bottom: 2px solid var(--tg-theme-button-color, #4a90e2);
+      padding-bottom: 8px;
+    }
+
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: var(--tg-theme-bg-color, #1a1a30);
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .info-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .info-label {
+      color: var(--tg-theme-hint-color, #888);
+      font-size: 14px;
+    }
+
+    .info-value {
+      color: var(--tg-theme-text-color, #fff);
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .badge.success {
+      background: #2ecc71;
+      color: white;
+    }
+
+    .badge.warning {
+      background: #f39c12;
+      color: white;
+    }
+
+    .badge.danger {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .badge.info {
+      background: #3498db;
+      color: white;
+    }
+
+    .status {
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    .status.success {
+      background: rgba(46, 204, 113, 0.2);
+      border: 1px solid #2ecc71;
+      color: #2ecc71;
+    }
+
+    .status.error {
+      background: rgba(231, 76, 60, 0.2);
+      border: 1px solid #e74c3c;
+      color: #e74c3c;
+    }
+
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--tg-theme-button-color, #4a90e2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 20px;
+    }
+
+    .user-name {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .user-username {
+      text-align: center;
+      color: var(--tg-theme-hint-color, #888);
+      margin-bottom: 20px;
+    }
+  </style>
 </head>
 
 <body>
   <div class="container">
-    <header>
-      <h1>📱 TMA API Explorer</h1>
-      <p class="subtitle">Telegram Mini App 핵심 기능 테스트</p>
-    </header>
+    <h1>📱 Telegram Mini App Test</h1>
+    <p class="subtitle">TMA SDK 초기화 및 유저 정보 테스트</p>
 
-    <!-- 유저 정보 섹션 -->
-    <section class="card">
-      <h2>👤 유저 정보</h2>
-      <div class="info-box">
-        <div class="info-row">
-          <span class="label">ID:</span>
-          <span id="userId" class="value">-</span>
-        </div>
-        <div class="info-row">
-          <span class="label">이름:</span>
-          <span id="userName" class="value">-</span>
-        </div>
-        <div class="info-row">
-          <span class="label">프리미엄:</span>
-          <span id="userPremium" class="value">-</span>
-        </div>
-        <div class="info-row">
-          <span class="label">언어:</span>
-          <span id="userLang" class="value">-</span>
-        </div>
-      </div>
-    </section>
+    <!-- 상태 메시지 -->
+    <div id="status" class="status success" style="display: none;">
+      초기화 중...
+    </div>
 
-    <!-- CloudStorage 테스트 섹션 -->
-    <section class="card">
-      <h2>💾 CloudStorage 테스트</h2>
-      <div class="storage-controls">
-        <input type="text" id="storageInput" placeholder="저장할 값 입력" class="input-field" />
-        <div class="button-group">
-          <button id="saveBtn" class="btn btn-primary">💾 저장</button>
-          <button id="loadBtn" class="btn btn-secondary">🔄 불러오기</button>
-          <button id="deleteBtn" class="btn btn-danger">🗑️ 삭제</button>
-        </div>
+    <!-- 환경 정보 -->
+    <div class="section">
+      <div class="section-title">🌐 환경 정보</div>
+      <div class="info-item">
+        <span class="info-label">플랫폼:</span>
+        <span class="info-value" id="platform">확인 중...</span>
       </div>
-      <div class="info-box">
-        <div class="info-row">
-          <span class="label">저장된 값:</span>
-          <span id="storageValue" class="value">-</span>
-        </div>
+      <div class="info-item">
+        <span class="info-label">버전:</span>
+        <span class="info-value" id="version">확인 중...</span>
       </div>
-    </section>
+      <div class="info-item">
+        <span class="info-label">TMA 지원:</span>
+        <span class="info-value" id="tmaSupport">확인 중...</span>
+      </div>
+    </div>
 
-    <!-- HapticFeedback 테스트 섹션 -->
-    <section class="card">
-      <h2>📳 HapticFeedback 테스트</h2>
-      <div class="button-group">
-        <button class="btn btn-haptic" data-haptic="light">Light</button>
-        <button class="btn btn-haptic" data-haptic="medium">Medium</button>
-        <button class="btn btn-haptic" data-haptic="heavy">Heavy</button>
-      </div>
-      <div class="button-group">
-        <button class="btn btn-haptic btn-success" data-haptic="success">
-          Success
-        </button>
-        <button class="btn btn-haptic btn-error" data-haptic="error">
-          Error
-        </button>
-      </div>
-    </section>
+    <!-- 유저 정보 -->
+    <div class="section">
+      <div class="section-title">👤 유저 정보</div>
+      <div id="userInfo">
+        <div class="avatar" id="avatar">?</div>
+        <div class="user-name" id="userName">-</div>
+        <div class="user-username" id="userUsername">@username</div>
 
-    <!-- 테마 정보 섹션 -->
-    <section class="card">
-      <h2>🎨 테마 정보</h2>
-      <div class="info-box">
-        <div class="info-row">
-          <span class="label">테마:</span>
-          <span id="themeMode" class="value">-</span>
+        <div class="info-item">
+          <span class="info-label">유저 ID:</span>
+          <span class="info-value" id="userId">-</span>
         </div>
-        <div class="info-row">
-          <span class="label">배경색:</span>
-          <span id="themeBg" class="value">-</span>
-          <span id="themeBgPreview" class="color-preview"></span>
+        <div class="info-item">
+          <span class="info-label">언어 코드:</span>
+          <span class="info-value" id="languageCode">-</span>
         </div>
-        <div class="info-row">
-          <span class="label">텍스트 색:</span>
-          <span id="themeText" class="value">-</span>
-          <span id="themeTextPreview" class="color-preview"></span>
-        </div>
-        <div class="info-row">
-          <span class="label">버튼 색:</span>
-          <span id="themeButton" class="value">-</span>
-          <span id="themeButtonPreview" class="color-preview"></span>
+        <div class="info-item">
+          <span class="info-label">프리미엄:</span>
+          <span class="info-value" id="isPremium">-</span>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- MainButton 테스트 섹션 -->
-    <section class="card">
-      <h2>🔘 MainButton 테스트</h2>
-      <div class="button-group">
-        <button id="showMainBtn" class="btn btn-primary">
-          MainButton 표시
-        </button>
-        <button id="hideMainBtn" class="btn btn-secondary">
-          MainButton 숨기기
-        </button>
+    <!-- 테마 정보 -->
+    <div class="section">
+      <div class="section-title">🎨 테마 정보</div>
+      <div class="info-item">
+        <span class="info-label">배경색:</span>
+        <span class="info-value" id="bgColor">-</span>
       </div>
-      <div class="button-group">
-        <button id="showAlertBtn" class="btn btn-primary">
-          Alert 팝업
-        </button>
-        <button id="showConfirmBtn" class="btn btn-primary">
-          Confirm 팝업
-        </button>
+      <div class="info-item">
+        <span class="info-label">텍스트 색:</span>
+        <span class="info-value" id="textColor">-</span>
       </div>
-    </section>
-
-    <!-- 플랫폼 정보 -->
-    <footer>
-      <p class="platform-info">
-        플랫폼: <span id="platformInfo">-</span>
-      </p>
-      <p class="version-info">Version: <span id="versionInfo">-</span></p>
-    </footer>
+      <div class="info-item">
+        <span class="info-label">버튼 색:</span>
+        <span class="info-value" id="buttonColor">-</span>
+      </div>
+    </div>
   </div>
 
-  <script type="module" src="./src/main.js"></script>
+  <script>
+        // TMA SDK 초기화
+        function initTelegramApp() {
+            const tg = window.Telegram?.WebApp;
+            
+            if (tg) {
+                console.log('✅ Telegram WebApp 감지됨');
+                
+                // TMA 초기화
+                tg.ready();
+                tg.expand();
+                
+                showStatus('✅ Telegram Mini App으로 실행 중', 'success');
+                
+                // 환경 정보
+                document.getElementById('platform').textContent = tg.platform || 'unknown';
+                document.getElementById('version').textContent = tg.version || 'unknown';
+                document.getElementById('tmaSupport').innerHTML = '<span class="badge success">지원됨</span>';
+                
+                // 유저 정보
+                const user = tg.initDataUnsafe?.user;
+                
+                if (user) {
+                    console.log('유저 정보:', user);
+                    
+                    // 아바타 (이름 첫 글자)
+                    const firstLetter = user.first_name?.charAt(0) || '?';
+                    document.getElementById('avatar').textContent = firstLetter;
+                    
+                    // 이름
+                    const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ');
+                    document.getElementById('userName').textContent = fullName || '-';
+                    
+                    // 유저네임
+                    document.getElementById('userUsername').textContent = user.username ? `@${user.username}` : '(유저네임 없음)';
+                    
+                    // 유저 ID
+                    document.getElementById('userId').textContent = user.id || '-';
+                    
+                    // 언어 코드
+                    document.getElementById('languageCode').textContent = user.language_code || '-';
+                    
+                    // 프리미엄 여부
+                    const isPremium = user.is_premium;
+                    document.getElementById('isPremium').innerHTML = isPremium 
+                        ? '<span class="badge success">⭐ Premium</span>'
+                        : '<span class="badge info">Standard</span>';
+                } else {
+                    showFallbackUser();
+                }
+                
+                // 테마 정보
+                const themeParams = tg.themeParams;
+                document.getElementById('bgColor').textContent = themeParams.bg_color || '-';
+                document.getElementById('textColor').textContent = themeParams.text_color || '-';
+                document.getElementById('buttonColor').textContent = themeParams.button_color || '-';
+                
+            } else {
+                console.log('⚠️ Telegram WebApp SDK 없음 - 폴백 모드');
+                showStatus('⚠️ 텔레그램 외부 환경 (폴백 모드)', 'error');
+                
+                // 폴백 정보
+                document.getElementById('platform').textContent = 'Web Browser';
+                document.getElementById('version').textContent = 'N/A';
+                document.getElementById('tmaSupport').innerHTML = '<span class="badge danger">미지원</span>';
+                
+                showFallbackUser();
+                
+                // 폴백 테마
+                document.getElementById('bgColor').textContent = '#1a1a2e';
+                document.getElementById('textColor').textContent = '#ffffff';
+                document.getElementById('buttonColor').textContent = '#4a90e2';
+            }
+        }
+        
+        // 폴백 유저 정보 표시
+        function showFallbackUser() {
+            document.getElementById('avatar').textContent = '🧑';
+            document.getElementById('userName').textContent = 'Test User';
+            document.getElementById('userUsername').textContent = '@testuser';
+            document.getElementById('userId').textContent = '123456789';
+            document.getElementById('languageCode').textContent = 'ko';
+            document.getElementById('isPremium').innerHTML = '<span class="badge warning">테스트 모드</span>';
+        }
+        
+        // 상태 메시지 표시
+        function showStatus(message, type = 'success') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+        }
+        
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', () => {
+            initTelegramApp();
+        });
+        
+        // 콘솔에 전체 데이터 출력
+        console.log('='.repeat(60));
+        console.log('📱 Telegram Mini App Test');
+        console.log('='.repeat(60));
+        console.log('WebApp:', window.Telegram?.WebApp);
+        console.log('initDataUnsafe:', window.Telegram?.WebApp?.initDataUnsafe);
+        console.log('='.repeat(60));
+  </script>
 </body>
 
 </html>
